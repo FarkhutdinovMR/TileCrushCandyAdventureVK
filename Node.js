@@ -2,37 +2,37 @@
 const express = require('express');
 const app = express();
 const md5 = require('md5');
-
+    console.log('POST Success');
 // ...
 
-// Обработчик POST-запросов, приходящих на адрес /purchase 
+// ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ POST-Г§Г ГЇГ°Г®Г±Г®Гў, ГЇГ°ГЁГµГ®Г¤ГїГ№ГЁГµ Г­Г  Г Г¤Г°ГҐГ± /purchase 
 app.post('/purchase', (request, response) => {
 
     var requestData = '';
     var requestParams = {};
     let responseData;
 
-
-    // Получение данных
+    console.log('POST Success');
+    // ГЏГ®Г«ГіГ·ГҐГ­ГЁГҐ Г¤Г Г­Г­Г»Гµ
     request.on('data', (chunk) => {
         requestData += chunk;
     })
         .on('end', () => {
 
-            // Формируем список параметров
+            // Г”Г®Г°Г¬ГЁГ°ГіГҐГ¬ Г±ГЇГЁГ±Г®ГЄ ГЇГ Г°Г Г¬ГҐГІГ°Г®Гў
             let s = String(requestData).split('&');
             s.map((item) => {
                 let [k, v] = item.split('=');
-                // Декодируем строки.
-                // Код функции PHPUrlDecode() приведён ниже.
+                // Г„ГҐГЄГ®Г¤ГЁГ°ГіГҐГ¬ Г±ГІГ°Г®ГЄГЁ.
+                // ГЉГ®Г¤ ГґГіГ­ГЄГ¶ГЁГЁ PHPUrlDecode() ГЇГ°ГЁГўГҐГ¤ВёГ­ Г­ГЁГ¦ГҐ.
                 requestParams[k] = PHPUrlDecode(v);
             });
 
-            // Проверка подписи
-            // Код функции calcSignature() приведён ниже.
+            // ГЏГ°Г®ГўГҐГ°ГЄГ  ГЇГ®Г¤ГЇГЁГ±ГЁ
+            // ГЉГ®Г¤ ГґГіГ­ГЄГ¶ГЁГЁ calcSignature() ГЇГ°ГЁГўГҐГ¤ВёГ­ Г­ГЁГ¦ГҐ.
             if (calcSignature(requestParams) == requestParams.sig) {
 
-                // Обрабатываем запрос
+                // ГЋГЎГ°Г ГЎГ ГІГ»ГўГ ГҐГ¬ Г§Г ГЇГ°Г®Г±
                 switch (requestParams.notification_type) {
                     case "get_item":
                         responseData = handleGetItem(requestParams);
@@ -46,46 +46,46 @@ app.post('/purchase', (request, response) => {
                         break;
                 }
             } else {
-                responseData = { // Ошибка подписи
+                responseData = { // ГЋГёГЁГЎГЄГ  ГЇГ®Г¤ГЇГЁГ±ГЁ
                     error: {
                         error_code: 20,
-                        error_msg: 'Несовпадение переданной и вычисленной подписи',
+                        error_msg: 'ГЌГҐГ±Г®ГўГЇГ Г¤ГҐГ­ГЁГҐ ГЇГҐГ°ГҐГ¤Г Г­Г­Г®Г© ГЁ ГўГ»Г·ГЁГ±Г«ГҐГ­Г­Г®Г© ГЇГ®Г¤ГЇГЁГ±ГЁ',
                         critical: true
                     }
                 }
             }
 
-            // Отправляем ответ
+            // ГЋГІГЇГ°Г ГўГ«ГїГҐГ¬ Г®ГІГўГҐГІ
             s = JSON.stringify(responseData);
             response.end(s);
         });
 })
 
-// Вычисление подписи
+// Г‚Г»Г·ГЁГ±Г«ГҐГ­ГЁГҐ ГЇГ®Г¤ГЇГЁГ±ГЁ
 function calcSignature(params) {
 
-    const ACCESS_KEY = 'sdznB44fjqoUmwL44JYF'; // Ключ доступа приложения
+    const ACCESS_KEY = 'sdznB44fjqoUmwL44JYF'; // ГЉГ«ГѕГ· Г¤Г®Г±ГІГіГЇГ  ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГї
 
-    // Сортируем параметры
+    // Г‘Г®Г°ГІГЁГ°ГіГҐГ¬ ГЇГ Г°Г Г¬ГҐГІГ°Г»
     let keys = Object.keys(params);
     keys.sort();
 
-    // Формируем строку из пар 'параметр=значение'
+    // Г”Г®Г°Г¬ГЁГ°ГіГҐГ¬ Г±ГІГ°Г®ГЄГі ГЁГ§ ГЇГ Г° 'ГЇГ Г°Г Г¬ГҐГІГ°=Г§Г­Г Г·ГҐГ­ГЁГҐ'
     let str = '';
     keys.map((item) => {
         if (item != "sig") {
             str += item + '=' + params[item];
         }
     });
-    str = str + ACCESS_KEY; // Добавляем ключ доступа
+    str = str + ACCESS_KEY; // Г„Г®ГЎГ ГўГ«ГїГҐГ¬ ГЄГ«ГѕГ· Г¤Г®Г±ГІГіГЇГ 
 
-    // Вычисляем подпись
+    // Г‚Г»Г·ГЁГ±Г«ГїГҐГ¬ ГЇГ®Г¤ГЇГЁГ±Гј
     let calculatedSignature = md5(str);
 
     return calculatedSignature;
 }
 
-// Обработчик уведомления get_item
+// ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ ГіГўГҐГ¤Г®Г¬Г«ГҐГ­ГЁГї get_item
 function handleGetItem(params) {
 
     let saleItems = [{
@@ -96,37 +96,37 @@ function handleGetItem(params) {
             "item_id": "bundle1"
         },
         "bundle2": {
-            "title": "Набор «Ученик»",
+            "title": "ГЌГ ГЎГ®Г° В«Г“Г·ГҐГ­ГЁГЄВ»",
             "price": 99,
             "photo_url": "https://farkhutdinovmr.github.io/TileCrushCandyAdventureVK/ApprenticeBundle.png",
             "item_id": "bundle2"
         },
         "bundle3": {
-            "title": "Профессиональный пакет",
+            "title": "ГЏГ°Г®ГґГҐГ±Г±ГЁГ®Г­Г Г«ГјГ­Г»Г© ГЇГ ГЄГҐГІ",
             "price": 149,
             "photo_url": "https://farkhutdinovmr.github.io/TileCrushCandyAdventureVK/ProBundle.png",
             "item_id": "bundle3"
         },
         "bundle4": {
-            "title": "Мастер-пакет",
+            "title": "ГЊГ Г±ГІГҐГ°-ГЇГ ГЄГҐГІ",
             "price": 249,
             "photo_url": "https://farkhutdinovmr.github.io/TileCrushCandyAdventureVK/MasterBundle.png",
             "item_id": "bundle4"
         },
         "bundle5": {
-            "title": "Гигантский комплект",
+            "title": "ГѓГЁГЈГ Г­ГІГ±ГЄГЁГ© ГЄГ®Г¬ГЇГ«ГҐГЄГІ",
             "price": 449,
             "photo_url": "https://farkhutdinovmr.github.io/TileCrushCandyAdventureVK/GiantBundle.png",
             "item_id": "bundle5"
         },
         "bundle6": {
-            "title": "Чемпионский набор",
+            "title": "Г—ГҐГ¬ГЇГЁГ®Г­Г±ГЄГЁГ© Г­Г ГЎГ®Г°",
             "price": 999,
             "photo_url": "https://farkhutdinovmr.github.io/TileCrushCandyAdventureVK/ChampionsBundle.png",
             "item_id": "bundle6"
         },
         "disableAd": {
-            "title": "Отключение рекламы",
+            "title": "ГЋГІГЄГ«ГѕГ·ГҐГ­ГЁГҐ Г°ГҐГЄГ«Г Г¬Г»",
             "price": 99,
             "photo_url": "https://farkhutdinovmr.github.io/TileCrushCandyAdventureVK/DisableAd.png",
             "item_id": "disableAd"
@@ -134,10 +134,10 @@ function handleGetItem(params) {
     }]
 
     let responseData
-    // Получаем информацию о товаре
+    // ГЏГ®Г«ГіГ·Г ГҐГ¬ ГЁГ­ГґГ®Г°Г¬Г Г¶ГЁГѕ Г® ГІГ®ГўГ Г°ГҐ
     let item = saleItems[params.item];
 
-    // Возвращаем ответ
+    // Г‚Г®Г§ГўГ°Г Г№Г ГҐГ¬ Г®ГІГўГҐГІ
     if (item) {
         responseData = {
             response: item
@@ -146,7 +146,7 @@ function handleGetItem(params) {
         responseData = {
             error: {
                 "error_code": 20,
-                "error_msg": "Товара не существует",
+                "error_msg": "Г’Г®ГўГ Г°Г  Г­ГҐ Г±ГіГ№ГҐГ±ГІГўГіГҐГІ",
                 "critical": true
             }
         };
@@ -155,21 +155,21 @@ function handleGetItem(params) {
     return responseData;
 }
 
-// Обработчик уведомления order_status_change
+// ГЋГЎГ°Г ГЎГ®ГІГ·ГЁГЄ ГіГўГҐГ¤Г®Г¬Г«ГҐГ­ГЁГї order_status_change
 function handleOrderStatusChange(params) {
 
     let responseData;
 
     switch (params.status) {
         case 'chargeable':
-            // Предоставляем товар в приложении
+            // ГЏГ°ГҐГ¤Г®Г±ГІГ ГўГ«ГїГҐГ¬ ГІГ®ГўГ Г° Гў ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГЁ
             // ... 
 
-            // Сохраняем информацию о заказе в приложении
+            // Г‘Г®ГµГ°Г Г­ГїГҐГ¬ ГЁГ­ГґГ®Г°Г¬Г Г¶ГЁГѕ Г® Г§Г ГЄГ Г§ГҐ Гў ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГЁ
             // ...
 
-            // Формируем ответ
-            let appOrder = 1; // Идентификатор заказа в приложении
+            // Г”Г®Г°Г¬ГЁГ°ГіГҐГ¬ Г®ГІГўГҐГІ
+            let appOrder = 1; // Г€Г¤ГҐГ­ГІГЁГґГЁГЄГ ГІГ®Г° Г§Г ГЄГ Г§Г  Гў ГЇГ°ГЁГ«Г®Г¦ГҐГ­ГЁГЁ
 
             responseData = {
                 response: {
@@ -181,14 +181,14 @@ function handleOrderStatusChange(params) {
             break;
 
         case 'refund':
-            // Обрабатываем возврат
+            // ГЋГЎГ°Г ГЎГ ГІГ»ГўГ ГҐГ¬ ГўГ®Г§ГўГ°Г ГІ
             // ...
             break;
         default:
             responseData = {
                 error: {
                     error_code: 11,
-                    error_msg: 'Ошибка в структуре данных',
+                    error_msg: 'ГЋГёГЁГЎГЄГ  Гў Г±ГІГ°ГіГЄГІГіГ°ГҐ Г¤Г Г­Г­Г»Гµ',
                     critical: true
                 }
             };
@@ -197,8 +197,8 @@ function handleOrderStatusChange(params) {
     return responseData;
 }
 
-// Служебная функция для декодирования строк
-// из формата PHP URL-encoded
+// Г‘Г«ГіГ¦ГҐГЎГ­Г Гї ГґГіГ­ГЄГ¶ГЁГї Г¤Г«Гї Г¤ГҐГЄГ®Г¤ГЁГ°Г®ГўГ Г­ГЁГї Г±ГІГ°Г®ГЄ
+// ГЁГ§ ГґГ®Г°Г¬Г ГІГ  PHP URL-encoded
 function PHPUrlDecode(str) {
     return decodeURIComponent(
         str.replace(/%21/g, '!')
